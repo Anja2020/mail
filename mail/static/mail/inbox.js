@@ -16,15 +16,10 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 function load_mailbox(mailbox) {
-  console.log("load mailbox", mailbox);
-
   // Send GET request for a specific mailbox
   fetch(`/emails/${mailbox}`)
     .then((response) => response.json())
     .then((emails) => {
-      // Print emails
-      console.log(emails);
-
       // Display the received mails from the request
       handle_mails(emails);
     });
@@ -37,7 +32,7 @@ function load_mailbox(mailbox) {
   // Show the mailbox name
   document.querySelector("#emails-view").innerHTML = `<h3>${
     mailbox.charAt(0).toUpperCase() + mailbox.slice(1)
-  }</h3>`;
+    }</h3>`;
 }
 
 function handle_mails(emails) {
@@ -80,8 +75,6 @@ function handle_mails(emails) {
 }
 
 function compose_email() {
-  console.log("Start composing");
-
   // Show compose view and hide other views
   document.querySelector("#emails-view").style.display = "none";
   document.querySelector("#compose-view").style.display = "block";
@@ -123,8 +116,6 @@ function post_mail() {
       } else {
         load_mailbox("sent");
       }
-
-      console.log(result);
     });
 }
 
@@ -152,6 +143,7 @@ function load_mail(email) {
   // Reply to the email
   document.querySelector("#reply").addEventListener("click", function () {
     reply_mail(email);
+    return false;
   });
 
   // Get and show details of an email
@@ -186,14 +178,12 @@ function handle_archive_property(email) {
   // Archive email
   document.querySelector("#archive").onclick = function () {
     change_archived(email, true);
-    console.log("archive");
     return false;
   };
 
   // Unarchive email
   document.querySelector("#unarchive").onclick = function () {
     change_archived(email, false);
-    console.log("unarchive");
     return false;
   };
 }
@@ -218,12 +208,7 @@ function reply_mail(email) {
   // Prefill composition fields
   document.querySelector("#compose-recipients").value = email.sender;
 
-  if (
-    document
-      .querySelector("#compose-subject")
-      .value.substring(0, 3)
-      .toString() == "Re:"
-  ) {
+  if (email.subject.substring(0, 3) === "Re:") {
     document.querySelector("#compose-subject").value = `${email.subject}`;
   } else {
     document.querySelector("#compose-subject").value = `Re: ${email.subject}`;
@@ -231,7 +216,7 @@ function reply_mail(email) {
 
   document.querySelector(
     "#compose-body"
-  ).value = `On ${email.timestamp} ${email.sender} wrote: ${email.body}`;
+  ).value = `On ${email.timestamp} ${email.sender} wrote: \n ${email.body} \n \n -----------------`;
 
   // Send POST request to compose email
   document.querySelector("#compose-form").onsubmit = function () {
